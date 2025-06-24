@@ -1,6 +1,6 @@
 # SCub for building the Godot Cesium submodule
 import CesiumBuildUtils as cesium_build_utils
-
+import os
 
 Import("env")
 
@@ -17,7 +17,8 @@ def load_cesium_module(p_includePaths: list[str], moduleName: str, loadSources=F
 
 
 env.Append(CPPDEFINES=[("_HAS_EXCEPTIONS", 1)])
-env.Append(CXXFLAGS=["/EHsc"])
+if os.name == cesium_build_utils.OS_WIN:
+    env.Append(CXXFLAGS=["/EHsc"])
 env.Append(CPPDEFINES=["SPDLOG_NO_EXCEPTIONS",
                        "LIBASYNC_NO_EXCEPTIONS"])
 

@@ -22,10 +22,17 @@ CESIUM_NATIVE_DIR_MODULE = "#modules/cesium_godot/native"
 
 OS_WIN = "nt"
 
+OS_LINUX = "posix"
+
 STATIC_TRIPLET = "x64-windows-static"
 
 RELEASE_CONFIG = "Release"
 
+def get_compile_flags():
+    if os.name == OS_WIN:
+        return ["/std:c++20", "/Zc:__cplusplus", "/utf-8", "/bigobj"]
+    elif os.name == OS_LINUX:
+        return ["-std=c++20"]
 
 def is_extension_target(argsDict) -> bool:
     return get_compile_target_definition(argsDict) == CESIUM_EXT_DEF
@@ -93,11 +100,11 @@ def configure_native(argumentsDict):
     repoDirectory = _scons_to_abs_path(repoDirectory)
     os.chdir(repoDirectory)
     # Assume you already have the triplet (for now)
-    triplet = "x64-windows-static"
+    triplet : str = determine_triplet()
     os.environ["VCPKG_TRIPLET"] = triplet
     # Run Cmake with the /MT flag on
     result = subprocess.run(
-        ["cmake", "-DCESIUM_MSVC_STATIC_RUNTIME_ENABLED=ON", '-DCMAKE_POLICY_VERSION_MINIMUM="3.5"',  "-DGIT_LFS_SKIP_SMUDGE=1", "-DVCPKG_TRIPLET=%s" % triplet, "."])
+        ["cmake", f"-DCMAKE_BUILD_TYPE={RELEASE_CONFIG}", "-DCESIUM_MSVC_STATIC_RUNTIME_ENABLED=ON", '-DCMAKE_POLICY_VERSION_MINIMUM="3.5"',  "-DGIT_LFS_SKIP_SMUDGE=1", "-DVCPKG_TRIPLET=%s" % triplet, "."])
 
     # We pray this works haha
     if result.returncode != 0:
@@ -105,6 +112,12 @@ def configure_native(argumentsDict):
         print('Error configuring Cesium native, please make sure you have CMake installed and up to date: ' + errorMsg)
         exit(1)
     print("Configuration completed without any errors!")
+
+def determine_triplet():
+    if (os.name == OS_WIN):
+        return "x64-windows-static"
+    if (os.name == OS_LINUX):
+        return "x64-linux"
 
 
 def compile_native(argumentsDict):
@@ -122,10 +135,26 @@ def compile_native(argumentsDict):
     print("Building Cesium Native, this might take a few minutes...")
     configure_native(argumentsDict)
     print("Compiling Cesium Native...")
-    if os.name != OS_WIN:
+        
+    # TODO: Test if we can just do cmake --build for all platforms
+    result = None
+    if os.name == OS_WIN:
+        result = build_native_win()
+    elif os.name == OS_LINUX:
+        result = build_native_linux()
+    else:
         print("Compiling for platform %s is not yet supported!" %
-              os.name, file=sys.stderr)
+              os.name, file=sys.stderr) 
+    if result.returncode != 0:
+        print("Error building Cesium Native: %s" % str(result.stderr))
+    print("Cleaning definitions on generated files...")
+    clean_cesium_definitions()
+    print("Finished building Cesium Native!")
 
+def build_native_linux():
+    return subprocess.run(["cmake", "--build", "."])
+
+def build_native_win():
     # execute MSBuild
     buildConfig: str = RELEASE_CONFIG
     solutionName: str = "cesium-native.sln"
@@ -135,13 +164,7 @@ def compile_native(argumentsDict):
             "Could not find MSBuild.exe, make sure to have Visual Studio installed", file=sys.stderr)
         return
     releaseConfig = "/property:Configuration=%s" % buildConfig
-    result = subprocess.run([msbuildPath, solutionName, releaseConfig])
-    if result.returncode != 0:
-        print("Error building Cesium Native: %s" % str(result.stderr))
-    print("Cleaning definitions on generated files...")
-    clean_cesium_definitions()
-    print("Finished building Cesium Native!")
-
+    return subprocess.run([msbuildPath, solutionName, releaseConfig])
 
 def clean_cesium_definitions():
     """
@@ -173,10 +196,11 @@ def clean_cesium_definitions():
 def install_additional_libs():
     print("Installing additional libraries")
     vcpkgPath = find_ezvcpkg_path()
-    executable = "%s/%s" % (vcpkgPath, "vcpkg.exe")
-    subprocess.run([executable, "install", "curl:%s" % (STATIC_TRIPLET)])
-    subprocess.run([executable, "install", "uriparser:%s" % (STATIC_TRIPLET)])
-    subprocess.run([executable, "install", "ada-url:%s" % (STATIC_TRIPLET)])
+    execExtension = ".exe" if os.name == OS_WIN else ""
+    executable = "%s/%s" % (vcpkgPath, "vcpkg" + execExtension)
+    subprocess.run([executable, "install", "curl:%s" % (determine_triplet())])
+    subprocess.run([executable, "install", "uriparser:%s" % (determine_triplet())])
+    subprocess.run([executable, "install", "ada-url:%s" % (determine_triplet())])
 
 
 def find_ms_build() -> str:

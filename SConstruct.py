@@ -23,7 +23,7 @@ cesium_build_utils.clone_lite_html_if_needed()
 cesium_build_utils.compile_native(ARGUMENTS)
 env = SConscript("godot-cpp/SConstruct")
 cesium_build_utils.generate_precision_symbols(ARGUMENTS, env)
-env.Append(CXXFLAGS=["/std:c++20", "/Zc:__cplusplus", "/utf-8", "/bigobj"])
+env.Append(CXXFLAGS=cesium_build_utils.get_compile_flags())
 env.Append(LINKFLAGS=["/IGNORE:4217"])
 
 cesium_build_utils.install_additional_libs()
