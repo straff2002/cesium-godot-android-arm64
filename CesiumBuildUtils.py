@@ -34,7 +34,7 @@ def get_compile_flags():
     if os.name == OS_WIN:
         return ["/std:c++20", "/Zc:__cplusplus", "/utf-8", "/bigobj"]
     elif os.name == OS_LINUX:
-        return ["-std=c++20"]
+        return ["-std=c++20", "-fexceptions"]
 
 def is_extension_target(argsDict) -> bool:
     return get_compile_target_definition(argsDict) == CESIUM_EXT_DEF
@@ -198,7 +198,6 @@ def clean_cesium_definitions():
 def install_additional_libs():
     print("Installing additional libraries")
     vcpkgPath = find_ezvcpkg_path()
-    print(f"Path to vcpkg: {vcpkgPath}")
     execExtension = ".exe" if os.name == OS_WIN else ""
     executable = "%s/%s" % (vcpkgPath, "vcpkg" + execExtension)
     subprocess.run([executable, "install", "curl:%s" % (determine_triplet())])
