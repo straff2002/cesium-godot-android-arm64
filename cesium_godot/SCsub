@@ -12,8 +12,9 @@ def load_cesium_module(p_includePaths: list[str], moduleName: str, loadSources=F
         rootDir = cesium_build_utils.get_root_dir_native()
     base_include = "%s/%s/include" % (rootDir, moduleName)
     generated_include = "%s/%s/generated/include" % (rootDir, moduleName)
-    p_includePaths.append(base_include)
-    p_includePaths.append(generated_include)
+    p_includePaths.append(cesium_build_utils.scons_to_abs_path(base_include))
+    p_includePaths.append(cesium_build_utils.scons_to_abs_path(generated_include))
+    print(f"Include paths: {includePaths}")
 
 
 env.Append(CPPDEFINES=[("_HAS_EXCEPTIONS", 1)])
@@ -88,8 +89,7 @@ if (cesium_build_utils.is_extension_target(ARGUMENTS)):
 else:
     cesium_env.add_source_files(cesium_env.modules_sources, sources)
 
-vcpkgIncludePath = cesium_build_utils.find_ezvcpkg_path(
-) + "/installed/%s/include" % (cesium_build_utils.STATIC_TRIPLET)
+vcpkgIncludePath = cesium_build_utils.find_ezvcpkg_include_path()
 print(vcpkgIncludePath)
 includePaths.append(vcpkgIncludePath)
 

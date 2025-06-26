@@ -28,6 +28,8 @@ STATIC_TRIPLET = "x64-windows-static"
 
 RELEASE_CONFIG = "Release"
 
+ezvcpkgFoundPath : str = ""
+
 def get_compile_flags():
     if os.name == OS_WIN:
         return ["/std:c++20", "/Zc:__cplusplus", "/utf-8", "/bigobj"]
@@ -80,7 +82,7 @@ def clone_lite_html_if_needed():
 
 def clone_repo_if_needed(targetDir: str, name: str, repoUrl: str, branch: str, acceptedCommitSHA: str):
     print(f"Cloning {name} repo")
-    repoDirectory = _scons_to_abs_path(targetDir)
+    repoDirectory = scons_to_abs_path(targetDir)
     if (os.path.exists(repoDirectory)):
         return
     subprocess.run(["git", "clone", "-b", branch,
@@ -97,7 +99,7 @@ def configure_native(argumentsDict):
     print("Configuring Cesium Native")
     isExt = is_extension_target(argumentsDict)
     repoDirectory = CESIUM_NATIVE_DIR_EXT if isExt else CESIUM_NATIVE_DIR_MODULE
-    repoDirectory = _scons_to_abs_path(repoDirectory)
+    repoDirectory = scons_to_abs_path(repoDirectory)
     os.chdir(repoDirectory)
     # Assume you already have the triplet (for now)
     triplet : str = determine_triplet()
@@ -176,7 +178,7 @@ def clean_cesium_definitions():
 
     conflictFilePath: str = "%s/%s" % (CESIUM_NATIVE_DIR_EXT,
                                        "/CesiumGltf/generated/include/CesiumGltf")
-    conflictFilePath = _scons_to_abs_path(conflictFilePath) + "/Material.h"
+    conflictFilePath = scons_to_abs_path(conflictFilePath) + "/Material.h"
     # Load the file into memory
 
     # Read in the file
@@ -248,7 +250,10 @@ def find_in_dir_recursive(path: str, pattern: str) -> (bool, str):
 
 
 def find_ezvcpkg_path() -> str:
-    # Search the C drive
+    global ezvcpkgFoundPath
+    if (ezvckpgFoundPath != None):
+        return ezvckpgFoundPath
+    # Search the home directory
     assumedPath = "%s.ezvcpkg" % (os.path.abspath(os.sep))
     print(f"Searching vcpkg at: {assumedPath}")
     if (not os.path.exists(assumedPath)):
@@ -265,18 +270,20 @@ def find_ezvcpkg_path() -> str:
     subDirs.sort(reverse=True, key=lambda x: os.stat(
         "%s/%s" % (assumedPath, x)).st_ctime)
     latestDir = subDirs[0]
-    assumedPath = "%s/%s" % (assumedPath, latestDir)
+    ezvckpgFoundPath = "%s/%s" % (assumedPath, latestDir)
     print(f"Found ezvcpkg at {assumedPath}")
-    return assumedPath
+    return ezvckpgFoundPath
 
 
 def clone_engine_repo_if_needed():
     pass
 
 
-def _scons_to_abs_path(path: str) -> str:
+def scons_to_abs_path(path: str) -> str:
     return Dir(path).get_abspath()
 
+def find_ezvcpkg_include_path() -> str:
+    return f"{ezvckpgFoundPath}/installed/{determine_triplet()}/include"
 
 def get_root_dir() -> str:
     return currentRootDir
