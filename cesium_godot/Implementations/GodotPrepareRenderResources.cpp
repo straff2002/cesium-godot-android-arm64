@@ -7,6 +7,7 @@
 #include "error_names.hpp"
 #include "glm/ext/vector_double3.hpp"
 #include "glm/fwd.hpp"
+#include "godot_cpp/core/error_macros.hpp"
 
 #if defined(CESIUM_GD_EXT)
 #include <godot_cpp/classes/mesh_instance3d.hpp>
@@ -46,9 +47,9 @@ CesiumAsync::Future<Cesium3DTilesSelection::TileLoadResultAndRenderResources> Go
 		instance->set_mesh(meshData);
 		
 		if (err != Error::OK) {
-			std::string errorMsg = std::string("Error generating meshes for tile ") + REFLECT_ERR_NAME(err);
-			std::exception exc(errorMsg.c_str());
-			p_promise.reject(&exc);
+			String errorMsg = String("Error generating meshes for tile ") + REFLECT_ERR_NAME(err);
+			ERR_PRINT(errorMsg);
+			p_promise.reject({});
 		}
 
 		const CesiumGltf::Node &rootNode = model->nodes.at(0);
@@ -176,7 +177,8 @@ void GodotPrepareRenderResources::attachRasterInMainThread(const Tile& tile, int
 	
 	for (const CesiumGltf::Mesh& mesh : model.meshes) {
 		for (const CesiumGltf::MeshPrimitive& primitive : mesh.primitives) {
-			std::_List_const_iterator attributeIt = primitive.attributes.find(overlayAttributeName);
+			// We will allow this use of auto for now... for now
+			auto attributeIt = primitive.attributes.find(overlayAttributeName);
 			if (attributeIt == primitive.attributes.end()) {
 				continue;
 			}

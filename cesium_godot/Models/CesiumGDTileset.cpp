@@ -80,6 +80,8 @@ constexpr const char* GENERATE_MISSING_NORMALS_DESC = "Whether to generate smoot
 */
 class OpaqueTilesetOptions {
 public:
+	OpaqueTilesetOptions() = default;
+	~OpaqueTilesetOptions() = default;
 	Cesium3DTilesSelection::TilesetOptions options{};
 
 	Cesium3DTilesSelection::TilesetContentOptions contentOptions{};

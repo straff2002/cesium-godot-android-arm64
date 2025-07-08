@@ -6,6 +6,7 @@
 *.obj
 *.dll
 *.lib
+*.os
 *.so
 *.tcl
 .vscode
@@ -31,6 +32,7 @@ godot3dtiles/**
 
 !godot3dtiles/bin/
 !godot3dtiles/bin/*.dll
+!godot3dtiles/bin/*.os
 !godot3dtiles/bin/*.gdextension
 godot3dtiles/bin/*Godot3DTiles*.dll
 

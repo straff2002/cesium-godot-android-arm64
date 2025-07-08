@@ -11,6 +11,8 @@
 using namespace godot;
 #endif
 
+#include "Cesium3DTilesSelection/Tileset.h"
+
 #include "CesiumDataSource.h"
 #include "../Utils/BRThreadPool.h"
 
