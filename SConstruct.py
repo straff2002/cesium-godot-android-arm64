@@ -24,7 +24,7 @@ cesium_build_utils.compile_native(ARGUMENTS)
 env = SConscript("godot-cpp/SConstruct")
 cesium_build_utils.generate_precision_symbols(ARGUMENTS, env)
 env.Append(CXXFLAGS=cesium_build_utils.get_compile_flags())
-env.Append(LINKFLAGS=["/IGNORE:4217"])
+env.Append(LINKFLAGS=cesium_build_utils.get_linker_flags())
 
 cesium_build_utils.install_additional_libs()
 

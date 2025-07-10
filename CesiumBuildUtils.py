@@ -36,6 +36,11 @@ def get_compile_flags():
     elif os.name == OS_LINUX:
         return ["-std=c++20", "-fexceptions", "-fpermissive"]
 
+def get_linker_flags():
+    if os.name == OS_WIN:
+        return ["/IGNORE:4217"]
+    return ""
+
 def is_extension_target(argsDict) -> bool:
     return get_compile_target_definition(argsDict) == CESIUM_EXT_DEF
 
@@ -290,4 +295,4 @@ def get_root_dir() -> str:
 
 
 def get_root_dir_native() -> str:
-    return currentRootDir + "/native"
+    return scons_to_abs_path(currentRootDir + "/native")

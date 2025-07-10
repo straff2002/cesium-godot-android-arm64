@@ -94,6 +94,10 @@ includePaths.append(vcpkgIncludePath)
 env.Append(CPPPATH=includePaths)
 
 
+root_dir_native = cesium_build_utils.get_root_dir_native()
+current_build_config = ""
+if (os.name  == cesium_build_utils.OS_WIN):
+    current_build_config = cesium_build_utils.RELEASE_CONFIG
 # Library paths and linking
 env.Append(
     LIBS=[
@@ -225,37 +229,28 @@ env.Append(
         "litehtml"
     ],
     LIBPATH=[
-        cesium_build_utils.get_root_dir_native(
-        ) + "/CesiumGltfReader/%s" % (cesium_build_utils.RELEASE_CONFIG),
-        cesium_build_utils.get_root_dir_native(
-        ) + "/CesiumGeospatial/%s" % (cesium_build_utils.RELEASE_CONFIG),
-        cesium_build_utils.get_root_dir_native(
-        ) + "/CesiumGltf/%s" % (cesium_build_utils.RELEASE_CONFIG),
-        cesium_build_utils.get_root_dir_native(
-        ) + "/CesiumJsonReader/%s" % (cesium_build_utils.RELEASE_CONFIG),
-        cesium_build_utils.get_root_dir_native(
-        ) + "/CesiumUtility/%s" % (cesium_build_utils.RELEASE_CONFIG),
-        cesium_build_utils.get_root_dir_native(
-        ) + "/Cesium3DTilesSelection/%s" % (cesium_build_utils.RELEASE_CONFIG),
-        cesium_build_utils.get_root_dir_native(
-        ) + "/CesiumRasterOverlays/%s" % (cesium_build_utils.RELEASE_CONFIG),
-        cesium_build_utils.get_root_dir_native(
-        ) + "/CesiumGeometry/%s" % (cesium_build_utils.RELEASE_CONFIG),
-        cesium_build_utils.get_root_dir_native(
-        ) + "/Cesium3DTilesReader/%s" % (cesium_build_utils.RELEASE_CONFIG),
-        cesium_build_utils.get_root_dir_native(
-        ) + "/CesiumGltfContent/%s" % (cesium_build_utils.RELEASE_CONFIG),
-        cesium_build_utils.get_root_dir_native(
-        ) + "/CesiumQuantizedMeshTerrain/%s" % (cesium_build_utils.RELEASE_CONFIG),
-        cesium_build_utils.get_root_dir_native(
-        ) + "/Cesium3DTilesContent/%s" % (cesium_build_utils.RELEASE_CONFIG),
+        f"{root_dir_native}/CesiumGltfReader/{current_build_config}",
+        f"{root_dir_native}/CesiumAsync/{current_build_config}",
+        f"{root_dir_native}/CesiumJsonReader/{current_build_config}",
+        f"{root_dir_native}/CesiumGltf/{current_build_config}",
+        f"{root_dir_native}/CesiumUtility/{current_build_config}",
+        f"{root_dir_native}/CesiumGeospatial/{current_build_config}",
+        f"{root_dir_native}/Cesium3DTilesSelection/{current_build_config}",
+        f"{root_dir_native}/CesiumRasterOverlays/{current_build_config}",
+        f"{root_dir_native}/CesiumGeometry/{current_build_config}",
+        f"{root_dir_native}/Cesium3DTilesReader/{current_build_config}",
+        f"{root_dir_native}/CesiumGltfContent/{current_build_config}",
+        f"{root_dir_native}/CesiumQuantizedMeshTerrain/{current_build_config}",
+        f"{root_dir_native}/Cesium3DTilesContent/{current_build_config}",      
         cesium_build_utils.get_root_dir_native() + "/libs/gsl",
         cesium_build_utils.get_root_dir_native() + "/libs/absl",
         cesium_build_utils.get_root_dir_native() + "/libs",
-        cesium_build_utils.get_root_dir_native(
-        ) + "/CesiumAsync/%s" % (cesium_build_utils.RELEASE_CONFIG),
         cesium_build_utils.get_root_dir() + "/third_party/litehtml",
         cesium_build_utils.find_ezvcpkg_path(
-        ) + "/installed/%s/lib" % (cesium_build_utils.STATIC_TRIPLET)
-    ],
+        ) + "/installed/%s/lib" % (cesium_build_utils.determine_triplet())
+    ]
 )
+
+print("\n\n=== LIBRARY SEARCH PATHS ===")
+for path in env["LIBPATH"]:
+    print(f" - {path}")
