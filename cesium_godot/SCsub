@@ -220,8 +220,6 @@ env.Append(
         "libwebp",
         "libwebpdecoder",
         "zstd",
-        # "zlib",
-        # "zlibstatic-ng",
         "libssl",
         "meshoptimizer",
         "ada",
@@ -250,7 +248,10 @@ env.Append(
         ) + "/installed/%s/lib" % (cesium_build_utils.determine_triplet())
     ]
 )
-
-print("\n\n=== LIBRARY SEARCH PATHS ===")
-for path in env["LIBPATH"]:
-    print(f" - {path}")
+if (os.name == cesium_build_utils.OS_WIN):
+    env.Append(
+        LIBS=[
+            "zlib",
+            "zlibstatic-ng",
+        ]
+    )
