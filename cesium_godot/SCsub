@@ -121,7 +121,6 @@ env.Append(
         "turbojpeg",
         "draco",
         "uriparser",
-        # "libmodpbase64",
         "s2",
         "glm",
         "absl_bad_any_cast_impl",
@@ -239,7 +238,7 @@ env.Append(
         f"{root_dir_native}/Cesium3DTilesReader/{current_build_config}",
         f"{root_dir_native}/CesiumGltfContent/{current_build_config}",
         f"{root_dir_native}/CesiumQuantizedMeshTerrain/{current_build_config}",
-        f"{root_dir_native}/Cesium3DTilesContent/{current_build_config}",      
+        f"{root_dir_native}/Cesium3DTilesContent/{current_build_config}",
         cesium_build_utils.get_root_dir_native() + "/libs/gsl",
         cesium_build_utils.get_root_dir_native() + "/libs/absl",
         cesium_build_utils.get_root_dir_native() + "/libs",
@@ -253,5 +252,6 @@ if (os.name == cesium_build_utils.OS_WIN):
         LIBS=[
             "zlib",
             "zlibstatic-ng",
+            "libmodpbase64"
         ]
     )
