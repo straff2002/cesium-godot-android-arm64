@@ -221,8 +221,8 @@ libraries = [
     "libssl",
     "meshoptimizer",
     "ada",
-    "gumbo",
-    "litehtml"
+    "litehtml",
+    "gumbo"
 ]
 
 if (os.name == cesium_build_utils.OS_WIN):

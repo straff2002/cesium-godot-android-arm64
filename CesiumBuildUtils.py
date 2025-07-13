@@ -34,61 +34,11 @@ def get_compile_flags():
     if os.name == OS_WIN:
         return ["/std:c++20", "/Zc:__cplusplus", "/utf-8", "/bigobj"]
     elif os.name == OS_LINUX:
-        return ["-std=c++20", "-fexceptions", "-fpermissive"]
+        return ["-std=c++20", "-fexceptions", "-fpermissive", "-fPIC"]
 
 def get_linker_flags():
     if os.name == OS_WIN:
         return ["/IGNORE:4217"]
-    # elif os.name == OS_LINUX:
-        # return [
-        #     "-Lcesium_godot/native/Cesium3DTiles",
-        #     "-lCesium3DTiles",
-        #     "-Lcesium_godot/native/Cesium3DTilesContent",
-        #     "-lCesium3DTilesContent",
-        #     "-Lcesium_godot/native/Cesium3DTilesReader",
-        #     "-lCesium3DTilesReader",
-        #     "-Lcesium_godot/native/Cesium3DTilesSelection",
-        #     "-lCesium3DTilesSelection",
-        #     "-Lcesium_godot/native/Cesium3DTilesWriter",
-        #     "-lCesium3DTilesWriter",
-        #     "-Lcesium_godot/native/CesiumAsync",
-        #     "-lCesiumAsync",
-        #     "-Lcesium_godot/native/CesiumClientCommon",
-        #     "-lCesiumClientCommon",
-        #     "-Lcesium_godot/native/CesiumGeometry",
-        #     "-lCesiumGeometry",
-        #     "-Lcesium_godot/native/CesiumGeospatial",
-        #     "-lCesiumGeospatial",
-        #     "-Lcesium_godot/native/CesiumGltf",
-        #     "-lCesiumGltf",
-        #     "-Lcesium_godot/native/CesiumGltfContent",
-        #     "-lCesiumGltfContent",
-        #     "-Lcesium_godot/native/CesiumGltfReader",
-        #     "-lCesiumGltfReader",
-        #     "-Lcesium_godot/native/CesiumGltfWriter",
-        #     "-lCesiumGltfWriter",
-        #     "-Lcesium_godot/native/CesiumIonClient",
-        #     "-lCesiumIonClient",
-        #     "-Lcesium_godot/native/CesiumITwinClient",
-        #     "-lCesiumITwinClient",
-        #     "-Lcesium_godot/native/CesiumJsonReader",
-        #     "-lCesiumJsonReader",
-        #     "-Lcesium_godot/native/CesiumJsonWriter",
-        #     "-lCesiumJsonWriter",
-        #     "-Lcesium_godot/native/CesiumQuantizedMeshTerrain",
-        #     "-lCesiumQuantizedMeshTerrain",
-        #     "-Lcesium_godot/native/CesiumRasterOverlays",
-        #     "-lCesiumRasterOverlays",
-        #     "-Lcesium_godot/native/CesiumUtility",
-        #     "-lCesiumUtility",
-        #     f"-L{find_ezvcpkg_path()}/installed/{determine_triplet()}/lib",
-        #     "-lcurl",
-        #     "-luriparser",
-        #     # "-lada-url",
-        #     "-lsqlite3",
-        #     "-ldl",
-        #     "-lpthread",
-        # ]
     return []
 
 def is_extension_target(argsDict) -> bool:
