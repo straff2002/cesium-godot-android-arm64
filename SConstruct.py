@@ -31,6 +31,8 @@ cesium_build_utils.install_additional_libs()
 compilationTarget: str = cesium_build_utils.get_compile_target_definition(ARGUMENTS)
 
 env.Append(CPPDEFINES=[compilationTarget])
+if (os.name == cesium_build_utils.OS_LINUX):
+    env.Append(CPPDEFINES=["CURL_STATIC_LIB", "SQLITE_STATIC"])
 env.__class__.add_source_files = add_source_files
 
 # Append include paths
