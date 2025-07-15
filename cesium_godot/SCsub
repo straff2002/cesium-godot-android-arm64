@@ -236,8 +236,6 @@ if (os.name == cesium_build_utils.OS_WIN):
 elif (os.name == cesium_build_utils.OS_LINUX):
     libraries.extend([
         "crypto",
-        "ssl",
-        "curl",
         "libz-ng"
     ])
     env.Append(LIBPATH=["/usr/lib/x86_64-linux-gnu"])

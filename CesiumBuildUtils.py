@@ -39,7 +39,7 @@ def get_compile_flags():
 def get_linker_flags():
     if os.name == OS_WIN:
         return ["/IGNORE:4217"]
-    return []
+    return ["Wl,--no-as-needed"]
 
 def is_extension_target(argsDict) -> bool:
     return get_compile_target_definition(argsDict) == CESIUM_EXT_DEF
