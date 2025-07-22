@@ -39,11 +39,15 @@ def get_compile_flags():
 def get_linker_flags():
     if os.name == OS_WIN:
         return ["/IGNORE:4217"]
-    return ["Wl,--no-as-needed"]
+    return []
 
 def is_extension_target(argsDict) -> bool:
     return get_compile_target_definition(argsDict) == CESIUM_EXT_DEF
 
+def get_curl_lib_name() -> str:
+    if os.name == OS_WIN:
+        return "libcurl"
+    return "curl"
 
 def generate_precision_symbols(argsDict, env):
     print("Generating double precision compile symbols")
@@ -205,9 +209,10 @@ def install_additional_libs():
     vcpkgPath = find_ezvcpkg_path()
     execExtension = ".exe" if os.name == OS_WIN else ""
     executable = "%s/%s" % (vcpkgPath, "vcpkg" + execExtension)
-    subprocess.run([executable, "install", "curl:%s" % (determine_triplet())])
     subprocess.run([executable, "install", "uriparser:%s" % (determine_triplet())])
     subprocess.run([executable, "install", "ada-url:%s" % (determine_triplet())])
+    if os.name == OS_WIN:
+        subprocess.run([executable, "install", "curl:%s" % (determine_triplet())])
 
 
 def find_ms_build() -> str:

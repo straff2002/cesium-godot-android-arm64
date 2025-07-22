@@ -125,7 +125,7 @@ libraries = [
     "fmt",
     "spdlog",
     "tinyxml2",
-    "libcurl",
+    cesium_build_utils.get_curl_lib_name(),
     "sqlite3",
     # Needed only for GDExtension as it appears godot already links this
     "libwebp",
@@ -239,6 +239,7 @@ elif (os.name == cesium_build_utils.OS_LINUX):
         "libz-ng"
     ])
     env.Append(LIBPATH=["/usr/lib/x86_64-linux-gnu"])
+    env.Append(CPPPATH=["/usr/include/x86_64-linux-gnu"])
 
 env.Append(
     LIBS=libraries,
