@@ -138,9 +138,6 @@ libraries = [
     "gumbo"
 ]
 
-# This was a nightmare, so I abstracted it into a function, the function itself is also a nightmare
-cesium_build_utils.link_abseil_libs(env)
-
 if (os.name == cesium_build_utils.OS_WIN):
     libraries.extend([
         "zlib",
@@ -179,3 +176,6 @@ env.Append(
         ) + "/installed/%s/lib" % (cesium_build_utils.determine_triplet())
     ]
 )
+
+# This was a nightmare, so I abstracted it into a function, the function itself is also a nightmare
+cesium_build_utils.link_abseil_libs(env)

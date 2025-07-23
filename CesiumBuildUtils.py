@@ -82,6 +82,9 @@ def link_abseil_libs(env):
 
     env.Append(LINKFLAGS=['-Wl,--end-group'])
 
+    env.Append(LINKFLAGS=['-Wl,--start-group'], LIBS=["absl_log_internal_log_sink_set", "absl_log_globals", "absl_leak_check", "absl_log_internal_globals", "absl_log_internal_format", "absl_base", "absl_hash", "absl_city", "absl_low_level_hash", "absl_examine_stack", "absl_stacktrace", "absl_debugging_internal", "absl_synchronization", "absl_base", "absl_malloc_internal", "absl_int128", "absl_symbolize", "absl_kernel_timeout_internal", "absl_debugging_internal", "absl_demangle_internal", "absl_log_sink", "absl_demangle_rust", "absl_decode_rust_punycode", "absl_utf8_for_code_point"])
+    env.Append(LINKFLAGS=['-Wl,--end-group'])
+
 def clone_native_repo_if_needed():
     clone_repo_if_needed(ROOT_DIR_EXT + "/native", "Cesium Native",
                          "https://github.com/CesiumGS/cesium-native.git", "v0.48.0", "95498106dbac35de7ca87bc52c926a94b2091938")
