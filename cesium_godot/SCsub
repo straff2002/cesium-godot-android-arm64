@@ -147,7 +147,8 @@ if (os.name == cesium_build_utils.OS_WIN):
 elif (os.name == cesium_build_utils.OS_LINUX):
     libraries.extend([
         "crypto",
-        "libz-ng"
+        "libz-ng",
+        "liblibmodpbase64"
     ])
     env.Append(LIBPATH=["/usr/lib/x86_64-linux-gnu"])
     env.Append(CPPPATH=["/usr/include/x86_64-linux-gnu"])
