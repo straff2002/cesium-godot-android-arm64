@@ -13,7 +13,8 @@ A Godot 4 extension that integrates Cesium 3D Tiles capabilities into Godot Engi
 
 Leverage decades worth of cutting-edge advancements from the 3D Tiles standard to create cohesive, interactive, and realistic simulations and applications.
 
-
+## Supported Platforms
+As of now the plugin is available for Windows and Linux as development platforms, with support for Web and Android coming in the future
 
 ![Godot Cesium Plugin](readme_resources/NYC_Screenshot.png)
 
@@ -23,10 +24,14 @@ Leverage decades worth of cutting-edge advancements from the 3D Tiles standard t
 - **CMake 3.1+ and less than 4.0 due to compatibility issues**
 - **Python 3.8+** (with pip)
 - **SCons** (`pip install scons`)
-- **Visual Studio 2022** with C++ desktop development workload (If you plan on contributing or developing)
 - **Git**
 - **Godot 4.1+** (with GDExtension support)
-- **Windows 10/11** (64-bit)
+- **Linux specific**
+  - **libcurl4-openssl-dev**
+  - **x86 architecture**
+- **Windows specific:**
+  - **Visual Studio 2022** with C++ desktop development workload (If you plan on contributing or developing)
+  - **Windows 10/11** (64-bit)
 
 ## Installation (as GDExtension)
 
@@ -38,17 +43,15 @@ cd 3D-Tiles-For-Godot
 
 If you would like to build the binaries and you don't plan on modifying the underlying C++ code with any editor use the following command
 ```
-scons platform=windows arch=x64 compileTarget=extension target=template_release production=yes
+scons arch=x64 compileTarget=extension target=template_release production=yes
 ```
 
 Otherwise, to get a `compile_commands.json` file to use with an IDE or Text Editor, run
 ```
-scons platform=windows compiledb=true arch=x64 compileTarget=extension debug_symbols=true
+scons compiledb=true arch=x64 compileTarget=extension debug_symbols=true
 ```
 
 #### Build Flags Explained:
-
-* `platform=windows`: Build for Windows (currently only supported platform)
 
 * `compiledb=true`: Generate IDE-friendly compilation database (optional)
 
@@ -58,7 +61,7 @@ scons platform=windows compiledb=true arch=x64 compileTarget=extension debug_sym
 
 * `debug_symbols=yes`: Include debug information (use no for release)
 
-**The build binaries will be at `godot3dtiles/bin/Godot3DTiles.windows.template_debug.x86_64.dll`**
+**The build binaries will be at `godot3dtiles/bin/Godot3DTiles.windows.template_debug.x86_64.dll` for Windows, `godot3dtiles/bin/libGodot3DTiles.linux.template_debug.x86_64.so`**
 
 
 ## Double precision builds
@@ -155,6 +158,4 @@ You should also see the tilesets and CesiumGeoreference have been added automati
 
 **Hit the Play button**
 Tiles should start loading in now!
-
-#### Note: This plugin is currently Windows-only. Linux/MacOS support is planned for future releases.
 
