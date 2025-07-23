@@ -1,6 +1,6 @@
 # SCub for building the Godot Cesium submodule
 import CesiumBuildUtils as cesium_build_utils
-
+import os
 
 Import("env")
 
@@ -12,12 +12,13 @@ def load_cesium_module(p_includePaths: list[str], moduleName: str, loadSources=F
         rootDir = cesium_build_utils.get_root_dir_native()
     base_include = "%s/%s/include" % (rootDir, moduleName)
     generated_include = "%s/%s/generated/include" % (rootDir, moduleName)
-    p_includePaths.append(base_include)
-    p_includePaths.append(generated_include)
+    p_includePaths.append(cesium_build_utils.scons_to_abs_path(base_include))
+    p_includePaths.append(cesium_build_utils.scons_to_abs_path(generated_include))
 
 
 env.Append(CPPDEFINES=[("_HAS_EXCEPTIONS", 1)])
-env.Append(CXXFLAGS=["/EHsc"])
+if os.name == cesium_build_utils.OS_WIN:
+    env.Append(CXXFLAGS=["/EHsc"])
 env.Append(CPPDEFINES=["SPDLOG_NO_EXCEPTIONS",
                        "LIBASYNC_NO_EXCEPTIONS"])
 
@@ -87,40 +88,58 @@ if (cesium_build_utils.is_extension_target(ARGUMENTS)):
 else:
     cesium_env.add_source_files(cesium_env.modules_sources, sources)
 
-vcpkgIncludePath = cesium_build_utils.find_ezvcpkg_path(
-) + "/installed/%s/include" % (cesium_build_utils.STATIC_TRIPLET)
-print(vcpkgIncludePath)
+vcpkgIncludePath = cesium_build_utils.find_ezvcpkg_include_path()
 includePaths.append(vcpkgIncludePath)
 
 env.Append(CPPPATH=includePaths)
 
 
+root_dir_native = cesium_build_utils.get_root_dir_native()
+current_build_config = ""
+if (os.name  == cesium_build_utils.OS_WIN):
+    current_build_config = cesium_build_utils.RELEASE_CONFIG
 # Library paths and linking
-env.Append(
-    LIBS=[
-        "CesiumGltfReader",
-        "CesiumAsync",
-        "CesiumJsonReader",
-        "CesiumGltf",
-        "CesiumUtility",
-        "CesiumGeospatial",
-        "Cesium3DTilesSelection",
-        "CesiumRasterOverlays",
-        "CesiumGeometry",
-        "Cesium3DTilesReader",
-        "CesiumGltfContent",
-        "CesiumQuantizedMeshTerrain",
-        "Cesium3DTilesContent",
-        "async++",
-        "ktx",
-        # "astcenc-avx2-static",
-        "jpeg",
-        "turbojpeg",
-        "draco",
-        "uriparser",
-        "libmodpbase64",
-        "s2",
-        "glm",
+libraries = [
+    "Cesium3DTilesSelection",
+    "CesiumRasterOverlays",
+    "Cesium3DTilesContent",
+    "Cesium3DTilesReader",
+    "CesiumGltfReader",
+    "CesiumGltf",
+    "CesiumAsync",
+    "CesiumJsonReader",
+    "CesiumUtility",
+    "CesiumGeospatial",
+    "CesiumGeometry",
+    "CesiumGltfContent",
+    "CesiumQuantizedMeshTerrain",
+    "async++",
+    "ktx",
+    # "astcenc-avx2-static",
+    "jpeg",
+    "turbojpeg",
+    "draco",
+    "uriparser",
+    "s2",
+    "glm",
+    "fmt",
+    "spdlog",
+    "tinyxml2",
+    cesium_build_utils.get_curl_lib_name(),
+    "sqlite3",
+    # Needed only for GDExtension as it appears godot already links this
+    "libwebp",
+    "libwebpdecoder",
+    "zstd",
+    "libssl",
+    "meshoptimizer",
+    "ada",
+    "litehtml", # 35ecd69d05e72b0148204a576db62c2148084193
+    "gumbo"
+]
+
+if (os.name == cesium_build_utils.OS_WIN):
+    libraries.extend([
         "absl_bad_any_cast_impl",
         "absl_bad_optional_access",
         "absl_bad_variant_access",
@@ -208,55 +227,44 @@ env.Append(
         "absl_time",
         "absl_time_zone",
         "absl_vlog_config_internal",
-        "fmt",
-        "spdlog",
-        "tinyxml2",
-        "libcurl",
-        "sqlite3",
-        # Needed only for GDExtension as it appears godot already links this
-        "libwebp",
-        "libwebpdecoder",
-        "zstd",
         "zlib",
         "zlibstatic-ng",
-        "libssl",
-        "meshoptimizer",
-        "ada",
-        "gumbo",
-        "litehtml"
-    ],
+        "libmodpbase64"
+    ])
+elif (os.name == cesium_build_utils.OS_LINUX):
+    libraries.extend([
+        "crypto",
+        "libz-ng",
+        "liblibmodpbase64"
+    ])
+    env.Append(LIBPATH=["/usr/lib/x86_64-linux-gnu"])
+    env.Append(CPPPATH=["/usr/include/x86_64-linux-gnu"])
+
+env.Append(
+    LIBS=libraries,
     LIBPATH=[
-        cesium_build_utils.get_root_dir_native(
-        ) + "/CesiumGltfReader/%s" % (cesium_build_utils.RELEASE_CONFIG),
-        cesium_build_utils.get_root_dir_native(
-        ) + "/CesiumGeospatial/%s" % (cesium_build_utils.RELEASE_CONFIG),
-        cesium_build_utils.get_root_dir_native(
-        ) + "/CesiumGltf/%s" % (cesium_build_utils.RELEASE_CONFIG),
-        cesium_build_utils.get_root_dir_native(
-        ) + "/CesiumJsonReader/%s" % (cesium_build_utils.RELEASE_CONFIG),
-        cesium_build_utils.get_root_dir_native(
-        ) + "/CesiumUtility/%s" % (cesium_build_utils.RELEASE_CONFIG),
-        cesium_build_utils.get_root_dir_native(
-        ) + "/Cesium3DTilesSelection/%s" % (cesium_build_utils.RELEASE_CONFIG),
-        cesium_build_utils.get_root_dir_native(
-        ) + "/CesiumRasterOverlays/%s" % (cesium_build_utils.RELEASE_CONFIG),
-        cesium_build_utils.get_root_dir_native(
-        ) + "/CesiumGeometry/%s" % (cesium_build_utils.RELEASE_CONFIG),
-        cesium_build_utils.get_root_dir_native(
-        ) + "/Cesium3DTilesReader/%s" % (cesium_build_utils.RELEASE_CONFIG),
-        cesium_build_utils.get_root_dir_native(
-        ) + "/CesiumGltfContent/%s" % (cesium_build_utils.RELEASE_CONFIG),
-        cesium_build_utils.get_root_dir_native(
-        ) + "/CesiumQuantizedMeshTerrain/%s" % (cesium_build_utils.RELEASE_CONFIG),
-        cesium_build_utils.get_root_dir_native(
-        ) + "/Cesium3DTilesContent/%s" % (cesium_build_utils.RELEASE_CONFIG),
+        f"{root_dir_native}/CesiumGltfReader/{current_build_config}",
+        f"{root_dir_native}/CesiumAsync/{current_build_config}",
+        f"{root_dir_native}/CesiumJsonReader/{current_build_config}",
+        f"{root_dir_native}/CesiumGltf/{current_build_config}",
+        f"{root_dir_native}/CesiumUtility/{current_build_config}",
+        f"{root_dir_native}/CesiumGeospatial/{current_build_config}",
+        f"{root_dir_native}/Cesium3DTilesSelection/{current_build_config}",
+        f"{root_dir_native}/CesiumRasterOverlays/{current_build_config}",
+        f"{root_dir_native}/CesiumGeometry/{current_build_config}",
+        f"{root_dir_native}/Cesium3DTilesReader/{current_build_config}",
+        f"{root_dir_native}/CesiumGltfContent/{current_build_config}",
+        f"{root_dir_native}/CesiumQuantizedMeshTerrain/{current_build_config}",
+        f"{root_dir_native}/Cesium3DTilesContent/{current_build_config}",
         cesium_build_utils.get_root_dir_native() + "/libs/gsl",
         cesium_build_utils.get_root_dir_native() + "/libs/absl",
         cesium_build_utils.get_root_dir_native() + "/libs",
-        cesium_build_utils.get_root_dir_native(
-        ) + "/CesiumAsync/%s" % (cesium_build_utils.RELEASE_CONFIG),
         cesium_build_utils.get_root_dir() + "/third_party/litehtml",
         cesium_build_utils.find_ezvcpkg_path(
-        ) + "/installed/%s/lib" % (cesium_build_utils.STATIC_TRIPLET)
-    ],
+        ) + "/installed/%s/lib" % (cesium_build_utils.determine_triplet())
+    ]
 )
+
+# This was a nightmare, so I abstracted it into a function, the function itself is also a nightmare
+if (os.name == cesium_build_utils.OS_LINUX):
+    cesium_build_utils.link_abseil_libs(env)

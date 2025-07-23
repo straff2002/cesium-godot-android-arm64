@@ -22,14 +22,32 @@ CESIUM_NATIVE_DIR_MODULE = "#modules/cesium_godot/native"
 
 OS_WIN = "nt"
 
+OS_LINUX = "posix"
+
 STATIC_TRIPLET = "x64-windows-static"
 
 RELEASE_CONFIG = "Release"
 
+ezvcpkgFoundPath : str = ""
+
+def get_compile_flags():
+    if os.name == OS_WIN:
+        return ["/std:c++20", "/Zc:__cplusplus", "/utf-8", "/bigobj"]
+    elif os.name == OS_LINUX:
+        return ["-std=c++20", "-fexceptions", "-fpermissive", "-fPIC"]
+
+def get_linker_flags():
+    if os.name == OS_WIN:
+        return ["/IGNORE:4217"]
+    return []
 
 def is_extension_target(argsDict) -> bool:
     return get_compile_target_definition(argsDict) == CESIUM_EXT_DEF
 
+def get_curl_lib_name() -> str:
+    if os.name == OS_WIN:
+        return "libcurl"
+    return "curl"
 
 def generate_precision_symbols(argsDict, env):
     print("Generating double precision compile symbols")
@@ -54,6 +72,18 @@ def get_compile_target_definition(argsDict) -> str:
     print("[CESIUM] - Compile target not recognized, options are: module / extension")
     exit(1)
 
+def link_abseil_libs(env):
+    foundLibs: list[SCons.Node.FS.File] = env.Glob(f"{find_ezvcpkg_path()}/packages/abseil_{determine_triplet()}/lib/*absl*.a")
+
+    # Dark magic to strip the lib prefix and the file extension
+    foundLibs = [lib.name.replace("lib", "")[:-2] for lib in foundLibs]    
+
+    env.Append(LINKFLAGS=['-Wl,--start-group'], LIBS=foundLibs)
+
+    env.Append(LINKFLAGS=['-Wl,--end-group'])
+
+    env.Append(LINKFLAGS=['-Wl,--start-group'], LIBS=["absl_log_internal_log_sink_set", "absl_log_globals", "absl_leak_check", "absl_log_internal_globals", "absl_log_internal_format", "absl_base", "absl_hash", "absl_city", "absl_low_level_hash", "absl_examine_stack", "absl_stacktrace", "absl_debugging_internal", "absl_synchronization", "absl_base", "absl_malloc_internal", "absl_int128", "absl_symbolize", "absl_kernel_timeout_internal", "absl_debugging_internal", "absl_demangle_internal", "absl_log_sink", "absl_demangle_rust", "absl_decode_rust_punycode", "absl_utf8_for_code_point"])
+    env.Append(LINKFLAGS=['-Wl,--end-group'])
 
 def clone_native_repo_if_needed():
     clone_repo_if_needed(ROOT_DIR_EXT + "/native", "Cesium Native",
@@ -73,7 +103,7 @@ def clone_lite_html_if_needed():
 
 def clone_repo_if_needed(targetDir: str, name: str, repoUrl: str, branch: str, acceptedCommitSHA: str):
     print(f"Cloning {name} repo")
-    repoDirectory = _scons_to_abs_path(targetDir)
+    repoDirectory = scons_to_abs_path(targetDir)
     if (os.path.exists(repoDirectory)):
         return
     subprocess.run(["git", "clone", "-b", branch,
@@ -90,14 +120,14 @@ def configure_native(argumentsDict):
     print("Configuring Cesium Native")
     isExt = is_extension_target(argumentsDict)
     repoDirectory = CESIUM_NATIVE_DIR_EXT if isExt else CESIUM_NATIVE_DIR_MODULE
-    repoDirectory = _scons_to_abs_path(repoDirectory)
+    repoDirectory = scons_to_abs_path(repoDirectory)
     os.chdir(repoDirectory)
     # Assume you already have the triplet (for now)
-    triplet = "x64-windows-static"
+    triplet : str = determine_triplet()
     os.environ["VCPKG_TRIPLET"] = triplet
     # Run Cmake with the /MT flag on
     result = subprocess.run(
-        ["cmake", "-DCESIUM_MSVC_STATIC_RUNTIME_ENABLED=ON", '-DCMAKE_POLICY_VERSION_MINIMUM="3.5"',  "-DGIT_LFS_SKIP_SMUDGE=1", "-DVCPKG_TRIPLET=%s" % triplet, "."])
+        ["cmake", f"-DCMAKE_BUILD_TYPE={RELEASE_CONFIG}", "-DCESIUM_MSVC_STATIC_RUNTIME_ENABLED=ON", '-DCMAKE_POLICY_VERSION_MINIMUM="3.5"',  "-DGIT_LFS_SKIP_SMUDGE=1", "-DVCPKG_TRIPLET=%s" % triplet, "."])
 
     # We pray this works haha
     if result.returncode != 0:
@@ -105,6 +135,12 @@ def configure_native(argumentsDict):
         print('Error configuring Cesium native, please make sure you have CMake installed and up to date: ' + errorMsg)
         exit(1)
     print("Configuration completed without any errors!")
+
+def determine_triplet():
+    if (os.name == OS_WIN):
+        return "x64-windows-static"
+    if (os.name == OS_LINUX):
+        return "x64-linux"
 
 
 def compile_native(argumentsDict):
@@ -122,10 +158,26 @@ def compile_native(argumentsDict):
     print("Building Cesium Native, this might take a few minutes...")
     configure_native(argumentsDict)
     print("Compiling Cesium Native...")
-    if os.name != OS_WIN:
+        
+    # TODO: Test if we can just do cmake --build for all platforms
+    result = None
+    if os.name == OS_WIN:
+        result = build_native_win()
+    elif os.name == OS_LINUX:
+        result = build_native_linux()
+    else:
         print("Compiling for platform %s is not yet supported!" %
-              os.name, file=sys.stderr)
+              os.name, file=sys.stderr) 
+    if result.returncode != 0:
+        print("Error building Cesium Native: %s" % str(result.stderr))
+    print("Cleaning definitions on generated files...")
+    clean_cesium_definitions()
+    print("Finished building Cesium Native!")
 
+def build_native_linux():
+    return subprocess.run(["cmake", "--build", "."])
+
+def build_native_win():
     # execute MSBuild
     buildConfig: str = RELEASE_CONFIG
     solutionName: str = "cesium-native.sln"
@@ -135,13 +187,7 @@ def compile_native(argumentsDict):
             "Could not find MSBuild.exe, make sure to have Visual Studio installed", file=sys.stderr)
         return
     releaseConfig = "/property:Configuration=%s" % buildConfig
-    result = subprocess.run([msbuildPath, solutionName, releaseConfig])
-    if result.returncode != 0:
-        print("Error building Cesium Native: %s" % str(result.stderr))
-    print("Cleaning definitions on generated files...")
-    clean_cesium_definitions()
-    print("Finished building Cesium Native!")
-
+    return subprocess.run([msbuildPath, solutionName, releaseConfig])
 
 def clean_cesium_definitions():
     """
@@ -153,7 +199,7 @@ def clean_cesium_definitions():
 
     conflictFilePath: str = "%s/%s" % (CESIUM_NATIVE_DIR_EXT,
                                        "/CesiumGltf/generated/include/CesiumGltf")
-    conflictFilePath = _scons_to_abs_path(conflictFilePath) + "/Material.h"
+    conflictFilePath = scons_to_abs_path(conflictFilePath) + "/Material.h"
     # Load the file into memory
 
     # Read in the file
@@ -173,10 +219,12 @@ def clean_cesium_definitions():
 def install_additional_libs():
     print("Installing additional libraries")
     vcpkgPath = find_ezvcpkg_path()
-    executable = "%s/%s" % (vcpkgPath, "vcpkg.exe")
-    subprocess.run([executable, "install", "curl:%s" % (STATIC_TRIPLET)])
-    subprocess.run([executable, "install", "uriparser:%s" % (STATIC_TRIPLET)])
-    subprocess.run([executable, "install", "ada-url:%s" % (STATIC_TRIPLET)])
+    execExtension = ".exe" if os.name == OS_WIN else ""
+    executable = "%s/%s" % (vcpkgPath, "vcpkg" + execExtension)
+    subprocess.run([executable, "install", "uriparser:%s" % (determine_triplet())])
+    subprocess.run([executable, "install", "ada-url:%s" % (determine_triplet())])
+    if os.name == OS_WIN:
+        subprocess.run([executable, "install", "curl:%s" % (determine_triplet())])
 
 
 def find_ms_build() -> str:
@@ -224,7 +272,10 @@ def find_in_dir_recursive(path: str, pattern: str) -> (bool, str):
 
 
 def find_ezvcpkg_path() -> str:
-    # Search the C drive
+    global ezvcpkgFoundPath
+    if (ezvcpkgFoundPath != ""):
+        return ezvcpkgFoundPath
+    # Search the home directory
     assumedPath = "%s.ezvcpkg" % (os.path.abspath(os.sep))
     print(f"Searching vcpkg at: {assumedPath}")
     if (not os.path.exists(assumedPath)):
@@ -241,22 +292,24 @@ def find_ezvcpkg_path() -> str:
     subDirs.sort(reverse=True, key=lambda x: os.stat(
         "%s/%s" % (assumedPath, x)).st_ctime)
     latestDir = subDirs[0]
-    assumedPath = "%s/%s" % (assumedPath, latestDir)
-    print(f"Found ezvcpkg at {assumedPath}")
-    return assumedPath
+    ezvcpkgFoundPath = "%s/%s" % (assumedPath, latestDir)
+    print(f"Found ezvcpkg at {ezvcpkgFoundPath}")
+    return ezvcpkgFoundPath
 
 
 def clone_engine_repo_if_needed():
     pass
 
 
-def _scons_to_abs_path(path: str) -> str:
+def scons_to_abs_path(path: str) -> str:
     return Dir(path).get_abspath()
 
+def find_ezvcpkg_include_path() -> str:
+    return f"{find_ezvcpkg_path()}/installed/{determine_triplet()}/include"
 
 def get_root_dir() -> str:
     return currentRootDir
 
 
 def get_root_dir_native() -> str:
-    return currentRootDir + "/native"
+    return scons_to_abs_path(currentRootDir + "/native")

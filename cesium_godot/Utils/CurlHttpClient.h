@@ -67,7 +67,7 @@ struct RequestHandle_t {
 				curl_easy_setopt(this->curlHandle, CURLOPT_POST, 1);
 				break;
 			case HTTPClient::METHOD_PUT:
-				curl_easy_setopt(this->curlHandle, CURLOPT_PUT, 1);
+				curl_easy_setopt(this->curlHandle, CURLOPT_UPLOAD, 1);
 				break;
 			default:
 				break;

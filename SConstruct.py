@@ -23,14 +23,16 @@ cesium_build_utils.clone_lite_html_if_needed()
 cesium_build_utils.compile_native(ARGUMENTS)
 env = SConscript("godot-cpp/SConstruct")
 cesium_build_utils.generate_precision_symbols(ARGUMENTS, env)
-env.Append(CXXFLAGS=["/std:c++20", "/Zc:__cplusplus", "/utf-8", "/bigobj"])
-env.Append(LINKFLAGS=["/IGNORE:4217"])
+env.Append(CXXFLAGS=cesium_build_utils.get_compile_flags())
+env.Append(LINKFLAGS=cesium_build_utils.get_linker_flags())
 
 cesium_build_utils.install_additional_libs()
 
 compilationTarget: str = cesium_build_utils.get_compile_target_definition(ARGUMENTS)
 
 env.Append(CPPDEFINES=[compilationTarget])
+if (os.name == cesium_build_utils.OS_LINUX):
+    env.Append(CPPDEFINES=["CURL_STATIC_LIB", "SQLITE_STATIC"])
 env.__class__.add_source_files = add_source_files
 
 # Append include paths

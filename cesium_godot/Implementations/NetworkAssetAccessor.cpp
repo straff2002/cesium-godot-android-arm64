@@ -113,8 +113,8 @@ CesiumAsync::Future<std::shared_ptr<CesiumAsync::IAssetRequest>> NetworkAssetAcc
 					if (responseCode == HTTPClient::ResponseCode::RESPONSE_UNAUTHORIZED) {
 						ERR_PRINT("Access to data denied, make sure you're logged into CesiumION and your token has access to the desired asset!");
 					}
-					std::exception exc(errorMessage.utf8().get_data());
-					p_promise.reject(&exc);
+					// It's fine to just use the default initializer, the error will be printed to Godot's stderr
+					p_promise.reject({});
 					return;
 				}
 

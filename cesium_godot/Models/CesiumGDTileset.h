@@ -11,9 +11,10 @@
 using namespace godot;
 #endif
 
+#include "Cesium3DTilesSelection/Tileset.h"
+
 #include "CesiumDataSource.h"
 #include "../Utils/BRThreadPool.h"
-#include "CesiumHTTPRequestNode.h"
 
 namespace Cesium3DTilesSelection {
 	class Tileset;
@@ -39,6 +40,7 @@ class Cesium3DTileset : public Node3D
 
 public:
 	Cesium3DTileset();
+	~Cesium3DTileset();
 #pragma region Public Editor Methods
 
 	void set_maximum_screen_space_error(real_t error);

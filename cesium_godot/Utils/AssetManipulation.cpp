@@ -15,7 +15,6 @@
 #include "godot_cpp/core/memory.hpp"
 #include "godot_cpp/variant/array.hpp"
 #include <cstdint>
-#include <winnt.h>
 
 const char* CESIUM_GLOBE_NAME = "CesiumGeoreference";
 const char* CESIUM_TILESET_NAME = "Cesium3DTileset";
