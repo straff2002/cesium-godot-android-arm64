@@ -40,6 +40,7 @@ var post_process_mesh = preload("res://addons/cesium_godot/visuals/post-process.
 var atmosphere_manager: AtmosphereManager
 
 const RADII := 6378137.0
+const ACCEPTABLE_NEAR_PLANE := 9
 
 func find_directional_light(node: Node) -> DirectionalLight3D:
 	if node is DirectionalLight3D:
@@ -54,16 +55,7 @@ func find_directional_light(node: Node) -> DirectionalLight3D:
 
 func _ready() -> void:
 	self.loaded = false
-	# self.atmosphere_manager = AtmosphereManager.new()
-	# self.atmosphere_manager.display_atmosphere = true
-	# self.atmosphere_manager.globe = self.globe_node
-	# var atmosphereNode = self.post_process_mesh.instantiate()
-	# self.add_child(atmosphereNode)
-	# self.atmosphere_manager.mesh_atmosphere = atmosphereNode
-	# self.atmosphere_manager.camera = self
-	# self.atmosphere_manager.sun = self.find_directional_light(self.get_tree().current_scene)
-	# self.add_child(self.atmosphere_manager)
-	# self.atmosphere_manager.owner = self
+	self.near = ACCEPTABLE_NEAR_PLANE
 	if (self.globe_node.origin_type == CesiumGeoreference.OriginType.TrueOrigin):
 		var ecefPos : Vector3 = Vector3(self.globe_node.ecefX, self.globe_node.ecefY, self.globe_node.ecefZ)
 		var enginePos: Vector3 = self.globe_node.get_initial_tx_ecef_to_engine() * ecefPos
@@ -193,7 +185,6 @@ func update_camera_pos_physical() -> void:
 
 func adjust_far_and_near() -> void:	
 	self.far = 35358652
-	self.near = 9
 
 func update_camera_rotation() -> void:
 	# Store original basis axes before any rotations
