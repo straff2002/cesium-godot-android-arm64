@@ -1,8 +1,17 @@
+#include "Cesium3DTilesSelection/BoundingVolume.h"
 #include "Cesium3DTilesSelection/ViewState.h"
+#include "CesiumGeometry/BoundingCylinderRegion.h"
+#include "CesiumGeometry/BoundingSphere.h"
+#include "CesiumGeometry/OrientedBoundingBox.h"
+#include "CesiumGeospatial/BoundingRegion.h"
+#include "CesiumGeospatial/BoundingRegionWithLooseFittingHeights.h"
+#include "CesiumGeospatial/S2CellBoundingVolume.h"
 #include "CesiumUtility/IntrusivePointer.h"
 #include "Models/CesiumDataSource.h"
 #include "glm/ext/vector_double3.hpp"
+#include "godot_cpp/variant/dictionary.hpp"
 #include <cstdint>
+#include <type_traits>
 #define SPDLOG_COMPILED_LIB
 #include "Models/CesiumGlobe.h"
 #define SPDLOG_FMT_EXTERNAL
@@ -47,7 +56,6 @@ using namespace godot;
 #include "../Utils/CesiumMathUtils.h"
 #include "../Implementations/NetworkAssetAccessor.h"
 #include "../Implementations/GodotPrepareRenderResources.h"
-#include "CesiumHTTPRequestNode.h"
 #include "Cesium3DTilesContent/registerAllTileContentTypes.h"
 #include "../Utils/CesiumVariantHash.h"
 #include <glm/gtc/quaternion.hpp>
@@ -86,6 +94,55 @@ public:
 
 	Cesium3DTilesSelection::TilesetContentOptions contentOptions{};
 };
+
+
+inline void draw_debug_volume_from_variant(const Cesium3DTilesSelection::BoundingVolume& tile, const Callable& callback) {
+	// Determine the type of bounding volume
+	std::visit([&callback](auto&& arg) {
+		EBoundingType boundingType;
+		Dictionary properties;
+		// Decay the type
+		using T = std::decay_t<decltype(arg)>();
+		// Set the enum (I know, I know)
+		if constexpr (std::is_same_v<T, CesiumGeometry::BoundingSphere>) {
+			boundingType = EBoundingType::Sphere;
+			Vector3 center = CesiumMathUtils::from_glm_vec3(arg.getCenter());
+			properties.get_or_add("center", center);
+			properties.get_or_add("radius", arg.getRadius());
+		}
+		
+		if constexpr (std::is_same_v<T, CesiumGeometry::OrientedBoundingBox>) {
+			boundingType = EBoundingType::Box;
+			Vector3 size = CesiumMathUtils::from_glm_vec3(arg.getLengths());
+			Vector3 center = CesiumMathUtils::from_glm_vec3(arg.getCenter());
+			properties.get_or_add("size", size);
+			properties.get_or_add("center", center);
+		}
+		
+		if constexpr (std::is_same_v<T, CesiumGeospatial::BoundingRegion>) {
+			boundingType = EBoundingType::Region;
+			ERR_PRINT("NOT YET IMPLEMENTED");
+		}
+		
+		if constexpr (std::is_same_v<T, CesiumGeospatial::BoundingRegionWithLooseFittingHeights>) {
+			boundingType = EBoundingType::RegionWithLooseFittingHeights;
+			ERR_PRINT("NOT YET IMPLEMENTED");
+		}
+		
+		if constexpr (std::is_same_v<T, CesiumGeospatial::S2CellBoundingVolume>) {
+			boundingType = EBoundingType::CellVolume;
+			ERR_PRINT("NOT YET IMPLEMENTED");
+		}
+		
+		if constexpr (std::is_same_v<T, CesiumGeometry::BoundingCylinderRegion>) {
+			boundingType = EBoundingType::CylinderRegion;
+			ERR_PRINT("NOT YET IMPLEMENTED");
+		}
+
+		// Call the GDScript function
+		callback.call(static_cast<int32_t>(boundingType), properties);
+	}, tile);
+}
 
 Cesium3DTileset::Cesium3DTileset()
 {
@@ -298,6 +355,9 @@ void Cesium3DTileset::update_tileset(const Transform3D& cameraTransform)
 	}
 }
 
+void Cesium3DTileset::set_debug_boundig_volumes_func(const Callable& onTileDrawn) {
+	this->m_debugVolumesFunction = onTileDrawn;
+}
 
 bool Cesium3DTileset::is_initial_loading_finished() const
 {
@@ -453,6 +513,10 @@ void Cesium3DTileset::render_tile_as_node(const Cesium3DTilesSelection::Tile& ti
 		foundNode->set_name(itos(hash));
 	}
 	
+	if (!this->m_debugVolumesFunction.is_null()) {
+		// TODO: Inline the function here
+		draw_debug_volume_from_variant(tile.getBoundingVolume(), this->m_debugVolumesFunction);
+	}
 	foundNode->show();
 }
 
@@ -578,8 +642,17 @@ void Cesium3DTileset::_bind_methods()
 #pragma region Public methods
 	ClassDB::bind_method(D_METHOD("is_initial_loading_finished"), &Cesium3DTileset::is_initial_loading_finished);
 	ClassDB::bind_method(D_METHOD("update_tileset", "camera_transform"), &Cesium3DTileset::update_tileset);
+	ClassDB::bind_method(D_METHOD("set_debug_bounding_volumes_func", "onTileDrawn"), &Cesium3DTileset::set_debug_boundig_volumes_func);
 	ClassDB::bind_method(D_METHOD("free_tile"), &Cesium3DTileset::free_tile);
 #pragma endregion
+
+	ClassDB::bind_integer_constant(get_class_static(), "BoundingType", "Box", static_cast<int32_t>(EBoundingType::Box));
+	ClassDB::bind_integer_constant(get_class_static(), "BoundingType", "CellVolume", static_cast<int32_t>(EBoundingType::CellVolume));
+	ClassDB::bind_integer_constant(get_class_static(), "BoundingType", "CylinderRegion", static_cast<int32_t>(EBoundingType::CylinderRegion));
+	ClassDB::bind_integer_constant(get_class_static(), "BoundingType", "Region", static_cast<int32_t>(EBoundingType::Region));
+	ClassDB::bind_integer_constant(get_class_static(), "BoundingType", "RegionWithLooseFittingHeights", static_cast<int32_t>(EBoundingType::RegionWithLooseFittingHeights));
+	ClassDB::bind_integer_constant(get_class_static(), "BoundingType", "Sphere", static_cast<int32_t>(EBoundingType::Sphere));
+
 }
 
 void Cesium3DTileset::_get_property_list(List<PropertyInfo>* properties) const
