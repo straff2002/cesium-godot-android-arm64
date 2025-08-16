@@ -35,6 +35,7 @@ class Cesium3DTile;
 #endif
 
 enum class EBoundingType {
+	None,
 	Sphere,
 	Box,
 	Region,

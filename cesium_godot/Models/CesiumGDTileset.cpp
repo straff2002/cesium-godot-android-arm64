@@ -99,8 +99,8 @@ public:
 inline void draw_debug_volume_from_variant(const Cesium3DTilesSelection::BoundingVolume& tile, const Callable& callback) {
 	// Determine the type of bounding volume
 	std::visit([&callback](auto&& arg) {
-		EBoundingType boundingType;
-		Dictionary properties;
+		EBoundingType boundingType{};
+		Dictionary properties{};
 		// Decay the type
 		using T = std::decay_t<decltype(arg)>();
 		// Set the enum (I know, I know)

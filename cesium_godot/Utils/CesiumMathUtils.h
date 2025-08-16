@@ -5,6 +5,7 @@
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/vector_double3.hpp"
 #include "glm/trigonometric.hpp"
+#include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/transform3d.hpp"
 #if defined(CESIUM_GD_EXT)
 #include <godot_cpp/core/math.hpp>
