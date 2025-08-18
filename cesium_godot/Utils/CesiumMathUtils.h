@@ -7,6 +7,7 @@
 #include "glm/trigonometric.hpp"
 #include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/transform3d.hpp"
+#include "godot_cpp/variant/vector2.hpp"
 #if defined(CESIUM_GD_EXT)
 #include <godot_cpp/core/math.hpp>
 #include <godot_cpp/variant/vector3.hpp>
