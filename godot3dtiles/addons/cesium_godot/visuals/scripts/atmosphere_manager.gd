@@ -38,10 +38,33 @@ func _ready() -> void:
 	material = base_material.duplicate()
 	material.set_shader_parameter("AlphaValue", 0.27)
 
+# Function to calculate the oblate radius value based on camera position and globe parameters.
+func get_oblate_radius(globe: CesiumGeoreference) -> float:
+	const semi_major_alpha : float = 6378137
+	const semi_minor_beta : float = 6356752
+
+	# Calculate the camera's ECEF position based on its coordinates.
+	var cam_ecef_loc := Vector3(globe.ecefX, globe.ecefY, globe.ecefZ)
+
+	# Calcuate the current vector length based on camera position.
+	var camera_x_squared = pow(cam_ecef_loc[0], 2)
+	var camera_y_squared = pow(cam_ecef_loc[1], 2)
+	var camera_z_squared = pow(cam_ecef_loc[2], 2)
+	var camera_oblate : float = ((camera_x_squared + camera_y_squared) / (pow(semi_major_alpha, 2))) + (camera_z_squared / (pow(semi_minor_beta, 2)))
+
+	# Estimate the surface elevation of oblate earth, by scaling camera_oblate vector down to 1
+	# https://en.wikipedia.org/wiki/Spheroid#Oblate_spheroids
+
+	var oblate_vector : Vector3 = cam_ecef_loc / pow(camera_oblate, 0.5)
+	var oblate_earth : float = pow(pow(oblate_vector[0], 2) + pow(oblate_vector[1], 2) + pow(oblate_vector[2], 2), 0.5)-100
+	return oblate_earth
+
 func update_settings():
 	var source_viewport := get_viewport()
 	const radius : float = 6378137.0
-	atmosphere_settings.set_properties(material, radius)
+	var oblate_radius: float = get_oblate_radius(self.globe)
+	#atmosphere_settings.set_properties(material, radius)
+	atmosphere_settings.set_properties(material, oblate_radius)
 	atmosphere_settings.atmosphere_scale = 0.1
 
 	# Get the camera's position based on its ECEF coordinates
@@ -52,7 +75,8 @@ func update_settings():
 	material.set_shader_parameter("DistanceToSurface", self.camera.last_hit_distance)
 	material.set_shader_parameter("PlanetCentre", centre)
 	material.set_shader_parameter("CameraWorldPos", cam_relative_engine_pos)
-	material.set_shader_parameter("OceanRadius", radius)
+	#atmosphere_settings.set_properties("OceanRadius", radius)
+	material.set_shader_parameter("OceanRadius", oblate_radius)
 	material.set_shader_parameter("ScreenWidth", source_viewport.size.x)
 	material.set_shader_parameter("ScreenHeight", source_viewport.size.y)
 
