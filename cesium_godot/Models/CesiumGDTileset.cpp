@@ -379,18 +379,17 @@ void Cesium3DTileset::update_tileset(const Transform3D& cameraTransform)
 		cameraDirection,
 		CesiumMathUtils::to_glm_dvec3(cameraUp),
 		CesiumMathUtils::to_glm_vec2(viewportSize),
-		horizontalFOV * 1.2f,
-		verticalFOV * 1.2f
+		horizontalFOV,
+		verticalFOV
 	);
 
 	const Cesium3DTilesSelection::ViewUpdateResult& updateResult = this->m_activeTileset->updateViewGroup(this->m_activeTileset->getDefaultViewGroup(), { currentViewState });
 	this->m_activeTileset->loadTiles();
 
-	for (CesiumUtility::IntrusivePointer<Cesium3DTilesSelection::Tile> tile : updateResult.tilesToRenderThisFrame) {
+	for (CesiumUtility::IntrusivePointer<const Cesium3DTilesSelection::Tile> tile : updateResult.tilesToRenderThisFrame) {
 		this->render_tile_as_node(*tile);
 	}
-
-	for (CesiumUtility::IntrusivePointer<Cesium3DTilesSelection::Tile> tile : updateResult.tilesFadingOut) {
+	for (CesiumUtility::IntrusivePointer<const Cesium3DTilesSelection::Tile> tile : updateResult.tilesFadingOut) {
 		despawn_tile(*tile);
 	}
 }
