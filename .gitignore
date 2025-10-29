@@ -39,6 +39,10 @@ godot3dtiles/bin/*Godot3DTiles*.dll
 !godot-html/ultralight/lib/*.lib
 !cesium_godot/third_party/litehtml/*.lib
 
+# Ignore any project import files 
+godot3dtiles/**/*.uid
+godot3dtiles/**/*.import
+
 # Ignore large files
 *.ipch
 *.vcxproj
