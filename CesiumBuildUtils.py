@@ -156,13 +156,14 @@ def clone_repo_if_needed(
     if os.path.exists(repoDirectory):
         return
     subprocess.run(
-        ["git", "clone", "-b", branch, repoUrl, "--recursive", repoDirectory]
+        ["git", "clone", "--depth=1", "-b", branch, repoUrl, "--recursive", repoDirectory]
     )
 
-    prevDir: str = os.getcwd()
-    os.chdir(repoDirectory)
-    subprocess.run(["git", "reset", "--hard", acceptedCommitSHA])
-    os.chdir(prevDir)
+    # Shouldn't we just rely on the repo tags?
+    # prevDir: str = os.getcwd()
+    # os.chdir(repoDirectory)
+    # subprocess.run(["git", "reset", "--hard", acceptedCommitSHA])
+    # os.chdir(prevDir)
 
 
 # Configure with CMake
