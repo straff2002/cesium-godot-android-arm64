@@ -166,8 +166,6 @@ Cesium3DTileset* find_first_tileset(Node* baseNode) {
 Camera3D* Godot3DTiles::AssetManipulation::find_georef_cam(Node* rootNode) {
 	Variant georef = rootNode->get("globe_node");
 	if (georef.get_type() != Variant::NIL) {
-		godot::print_line("Found a camera using the georef property");
-		godot::print_line(rootNode->get_name());
 		return Object::cast_to<Camera3D>(rootNode);
 	}
 
