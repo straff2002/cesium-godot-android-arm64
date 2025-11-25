@@ -88,6 +88,10 @@ int CesiumGeoreference::get_origin_type() const {
 	return static_cast<int32_t>(this->m_originType);
 }
 
+CesiumGeoreference::OriginType CesiumGeoreference::get_origin_type_raw() const {
+	return this->m_originType;
+}
+
 void CesiumGeoreference::set_origin_type(int type) {
 	this->m_originType = static_cast<OriginType>(type);
 }
