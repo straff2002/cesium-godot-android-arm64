@@ -26,6 +26,8 @@ using namespace godot;
 #include <CesiumGltfReader/GltfReader.h>
 #include "Utils/CesiumGDTextureLoader.h"
 #include "CesiumGltf/ExtensionCesiumRTC.h"
+#include "CesiumGltf/ExtensionKhrTextureTransform.h"
+#include <CesiumGltf/ExtensionKhrMaterialsUnlit.h>
 #include "CesiumGeometry/Transforms.h"
 
 #undef OPAQUE
@@ -124,9 +126,25 @@ Ref<ArrayMesh> CesiumGDModelLoader::generate_meshes_from_model(const CesiumGltf:
 			}
 			#endif
 			
-			if (model.isExtensionUsed("KHR_material_unlit") || model.isExtensionRequired("KHR_material_unlit")) {
+			if (modelReference->hasExtension<CesiumGltf::ExtensionKhrMaterialsUnlit>()) {
 				godotMaterial->set_shading_mode(BaseMaterial3D::ShadingMode::SHADING_MODE_UNSHADED);
-				//printf("\n%s", "Model has KHR_material_unlit");
+			}
+
+			if (modelReference->hasExtension<CesiumGltf::ExtensionKhrTextureTransform>()) {
+				const CesiumGltf::ExtensionKhrTextureTransform* texture_transform_ext = modelReference->getExtension<CesiumGltf::ExtensionKhrTextureTransform>();
+				if (texture_transform_ext) {
+					const std::vector<double>& offset_vec = texture_transform_ext->offset;
+					if (offset_vec.size() == 2) {
+						const Vector3 offset_vector3 = Vector3(offset_vec[0], offset_vec[1], 0.0f);
+						godotMaterial->set_uv1_offset(offset_vector3);
+					}
+
+					const std::vector<double>& scale_vec = texture_transform_ext->scale;
+					if (scale_vec.size() == 2) {
+						const Vector3 scale_vector3 = Vector3(scale_vec[0], scale_vec[1], 1.0f);
+						godotMaterial->set_uv1_scale(scale_vector3);
+					}
+				}
 			}
 
 			*error = apply_surface_to_mesh(primitive, meshInstance, arrays);
