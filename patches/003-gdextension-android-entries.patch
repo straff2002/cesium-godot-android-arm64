@@ -1,0 +1,8 @@
+--- a/project/addons/cesium_godot/cesium_godot.gdextension
++++ b/project/addons/cesium_godot/cesium_godot.gdextension
+@@ -10,3 +10,5 @@ windows.debug.x86_64 = "res://addons/cesium_godot/lib/libGodot3DTiles.windows.t
+ windows.release.x86_64 = "res://addons/cesium_godot/lib/libGodot3DTiles.windows.template_release.x86_64.dll"
+ linux.debug.x86_64 = "res://addons/cesium_godot/lib/libGodot3DTiles.linux.template_debug.x86_64.so"
+ linux.release.x86_64 = "res://addons/cesium_godot/lib/libGodot3DTiles.linux.template_release.x86_64.so"
++android.debug.arm64 = "res://addons/cesium_godot/lib/libGodot3DTiles.android.template_debug.arm64.so"
++android.release.arm64 = "res://addons/cesium_godot/lib/libGodot3DTiles.android.template_release.arm64.so"

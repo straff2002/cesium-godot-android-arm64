@@ -1,0 +1,33 @@
+# Build output
+build/
+build-*/
+*.o
+*.obj
+*.so
+*.dll
+*.dylib
+*.a
+*.lib
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Godot
+.godot/
+*.import
+
+# Submodules build artifacts
+upstream/build*/
+upstream/extern/cesium-native/build*/
+upstream/extern/godot-cpp/bin/
+
+# vcpkg
+vcpkg_installed/
