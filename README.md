@@ -1,10 +1,12 @@
-# Cesium 3D Tiles for Godot — Quest Edition
+# Cesium 3D Tiles for Godot — Android ARM64
 
-Pre-built Cesium 3D Tiles GDExtension for **Godot 4.x** with Android ARM64 support (Meta Quest 3 / Quest Pro).
+Pre-built Cesium 3D Tiles GDExtension for **Godot 4.2+** on Android ARM64 devices. Developed for Meta Quest 3, compatible with any Android ARM64 target.
+
+> **Status: Pre-release / Untested on device.** The binary compiles and links correctly but has not yet been verified running on hardware. If you test it, please report results in [Issues](../../issues).
 
 ## What This Is
 
-A fork of [3D-Tiles-For-Godot](https://github.com/Battle-Road-Labs/3D-Tiles-For-Godot) (MIT license) with added Android ARM64 cross-compilation support, enabling photorealistic Google 3D Tiles and Cesium Ion tilesets on Meta Quest headsets.
+A fork of [3D-Tiles-For-Godot](https://github.com/Battle-Road-Labs/3D-Tiles-For-Godot) (MIT license) with added Android ARM64 cross-compilation support, enabling photorealistic Google 3D Tiles and Cesium Ion tilesets on Android ARM64 devices.
 
 The upstream project only ships Windows x64 and Linux x64 binaries. This project adds the build system changes needed for Android ARM64 and provides pre-built binaries.
 
@@ -14,16 +16,27 @@ The upstream project only ships Windows x64 and Linux x64 binaries. This project
 |----------|-------------|--------|
 | Windows | x86_64 | ✅ (upstream) |
 | Linux | x86_64 | ✅ (upstream) |
-| **Android** | **ARM64** | ✅ **NEW** |
+| **Android** | **ARM64** | ⚠️ **Built, awaiting device testing** |
 | macOS | ARM64 | 🔜 (planned) |
+
+## Compatible Devices
+
+Any Android ARM64 device running a Godot 4.2+ export:
+
+- **Meta Quest 3** (Snapdragon XR2 Gen 2) — primary development target
+- **Meta Quest Pro** (Snapdragon XR2+)
+- **Meta Quest 2** (Snapdragon XR2)
+- **Pico 4** and other standalone VR headsets
+- Android phones and tablets (ARM64)
 
 ## Quick Start
 
 1. Download the latest release from [Releases](../../releases)
-2. Extract `addons/cesium_godot/` into your Godot project
-3. Enable the plugin in Project → Project Settings → Plugins
-4. Add a `CesiumGeoreference` node to your scene
-5. Add a `Cesium3DTileset` child with your Cesium Ion token
+2. Place `libGodot3DTiles.android.template_release.arm64.so` in `addons/cesium_godot/lib/` in your Godot project
+3. Copy the `.gdextension` file from this repo (ensure it has `android.debug.arm64` and `android.release.arm64` entries)
+4. Enable the plugin in Project → Project Settings → Plugins
+5. Add a `CesiumGeoreference` node to your scene
+6. Add a `Cesium3DTileset` child with your Cesium Ion token
 
 ### Cesium Ion Token
 
@@ -43,6 +56,8 @@ tileset.ion_access_token = "your_cesium_ion_token"
 ```
 
 ## Quest 3 Performance Tips
+
+These settings are tuned for Quest 3 but are good starting points for any mobile device:
 
 - Set `maximum_screen_space_error` to 16.0 (vs 8.0 desktop default)
 - Limit `maximum_simultaneous_tile_loads` to 4
@@ -96,7 +111,7 @@ Your Godot project              — Use nodes in editor or GDScript
 
 ## Why a Fork?
 
-The upstream project is focused on desktop platforms. Android ARM64 support requires non-trivial build system changes (NDK toolchain integration, vcpkg cross-compilation, platform-specific linking). Rather than waiting for upstream adoption, this fork provides ready-to-use Quest binaries.
+The upstream project is focused on desktop platforms. Android ARM64 support requires non-trivial build system changes (NDK toolchain integration, vcpkg cross-compilation, platform-specific linking). Rather than waiting for upstream adoption, this fork provides ready-to-use Android ARM64 binaries.
 
 Cesium Native itself fully supports Android ARM64 — proven by [Cesium for Unreal on Quest](https://cesium.com/learn/unreal/build-for-quest/). The blocker was purely the Godot plugin's build glue.
 
